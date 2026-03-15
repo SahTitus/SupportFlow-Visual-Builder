@@ -1,13 +1,171 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SupportFlow Builder</title>
-    </head>
-<body>
-    <div id="root">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles/variables.css" />
+    <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/components.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
+  </head>
+  <body>
+    <!-- TOPBAR -->
+    <div id="topbar">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <i class="bi bi-0-square"></i>
+        Support<span>Flow</span>
+      </div>
+      <div class="divider"></div>
+      <span class="badge badge-editor" id="mode-badge-editor">Editor</span>
+      <span class="badge badge-preview" id="mode-badge-preview">Preview</span>
+
+      <div class="spacer"></div>
+
+      <button class="btn btn-ghost" id="btn-zoom-out" title="Zoom out">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <line x1="8" y1="11" x2="14" y2="11" />
+        </svg>
+      </button>
+      <div class="zoom-display" id="zoom-label">100%</div>
+      <button class="btn btn-ghost" id="btn-zoom-in" title="Zoom in">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <line x1="8" y1="11" x2="14" y2="11" />
+          <line x1="11" y1="8" x2="11" y2="14" />
+        </svg>
+      </button>
+      <button class="btn btn-ghost" id="btn-fit" title="Fit to screen">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+          <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+          <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+          <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+      </button>
+      <div class="divider"></div>
+      <button class="btn btn-primary" id="btn-play">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+        Play
+      </button>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app">
+      <!-- CANVAS -->
+      <div id="canvas-wrap">
+        <div id="canvas">
+          <svg id="svg-layer"></svg>
         </div>
+      </div>
+
+      <!-- EDIT PANEL -->
+      <div id="edit-panel">
+        <div class="panel-header">
+          <div class="panel-title" id="panel-title">Edit Node</div>
+          <button class="panel-close" id="panel-close">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="panel-body" id="panel-body"></div>
+      </div>
+
+      <!-- PREVIEW OVERLAY -->
+      <div id="preview-overlay">
+        <div class="chat-window">
+          <div class="chat-header">
+            <div class="chat-avatar">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-robot"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5M3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.6 26.6 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.93.93 0 0 1-.765.935c-.845.147-2.34.346-4.235.346s-3.39-.2-4.235-.346A.93.93 0 0 1 3 9.219zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a25 25 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25 25 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135"
+                />
+                <path
+                  d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2zM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5"
+                />
+              </svg>
+            </div>
+            <div>
+              <div class="chat-title">SupportFlow Bot</div>
+              <div class="chat-subtitle">● online</div>
+            </div>
+            <div class="spacer"></div>
+            <button
+              class="btn btn-ghost"
+              id="btn-close-preview"
+              style="padding: 6px 12px; font-size: 12px"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              Exit
+            </button>
+          </div>
+          <div class="chat-messages" id="chat-messages"></div>
+          <div id="chat-bottom"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
     <script type="module" src="/src/main.js"></script>
-</body>
+  </body>
 </html>

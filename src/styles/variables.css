@@ -1,0 +1,48 @@
+:root {
+  --bg: #0a0c10;
+  --surface: #111318;
+  --surface-2: #181c24;
+  --border: #232836;
+  --border-hover: #3a4258;
+
+  --node-start: #0ff;
+  --node-q: #a78bfa;
+  --node-end: #34d399;
+
+  --accent: #0ff;
+  --accent-dim: rgba(0, 255, 255, 0.12);
+  --accent-glow: 0 0 18px rgba(0, 255, 255, 0.35);
+
+  --text-primary: #e8eaf2;
+  --text-muted: #5a6180;
+  --text-bright: #fff;
+
+  --radius: 10px;
+  --radius-lg: 16px;
+  --font-ui: "Syne", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --transition: 0.18s ease;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.75);
+  }
+}
+
+@keyframes msgIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
