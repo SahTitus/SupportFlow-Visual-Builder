@@ -9,6 +9,7 @@ import { CanvasController } from "./controllers/canvasController.js";
 import { NodeController } from "./controllers/nodeController.js";
 import { PreviewController } from "./controllers/previewController.js";
 import { Minimap } from "./ui/minimap.js";
+import { Tour } from "./ui/tour.js";
 
 class Application {
   constructor() {
@@ -23,6 +24,7 @@ class Application {
     this.nodeController = null;
     this.previewController = null;
     this.minimap = null;
+    this.tour = null;
   }
 
   // bootstrap state and UI
@@ -42,6 +44,10 @@ class Application {
       this.connectorRenderer.render();
       this.minimap.render();
     });
+
+    requestAnimationFrame(() => {
+      this.tour?.startIfFirstVisit();
+    });
   }
 
   // Load flow data
@@ -57,6 +63,7 @@ class Application {
     const previewOverlay = document.getElementById("preview-overlay");
     const minimapCanvas = document.getElementById("minimap-canvas");
     const canvasWrap = document.getElementById("canvas-wrap");
+    const tourOverlay = document.getElementById("tour-overlay");
 
     // renderers own DOM creation for nodes and connectors
     this.nodeRenderer = new NodeRenderer(canvas, this.state);
@@ -86,6 +93,7 @@ class Application {
     );
 
     this.previewUI = new PreviewUI(previewOverlay, this.state, this.flowEngine);
+    this.tour = new Tour(tourOverlay, this.getTourSteps());
   }
 
   setupControllers() {
@@ -191,6 +199,41 @@ class Application {
 
   fitView() {
     this.canvasController.fitView();
+  }
+
+  getTourSteps() {
+    return [
+      {
+        selector: "#topbar",
+        title: "Workspace",
+        body: "Mode badge and global controls live up here.",
+      },
+      {
+        selector: "#btn-play",
+        title: "Preview Mode",
+        body: "Run the bot flow end-to-end without leaving the editor.",
+      },
+      {
+        selector: "#canvas-wrap",
+        title: "Canvas",
+        body: "Drag nodes, click to edit, and pan by dragging empty space.",
+      },
+      {
+        selector: "#btn-zoom-in",
+        title: "Zoom + Fit",
+        body: "Use zoom buttons or the mouse wheel. Fit centers the flow.",
+      },
+      {
+        selector: "#topbar",
+        title: "Shortcuts",
+        body: "Ctrl+Z undo, Ctrl+Shift+Z or Ctrl+Y redo, Esc deselects.",
+      },
+      {
+        selector: "#minimap",
+        title: "Minimap",
+        body: "Jump around large flows quickly and keep orientation.",
+      },
+    ];
   }
 }
 

@@ -1,100 +1,187 @@
-# SupportFlow-Visual-Builder
-This challenge is designed to test your ability to bridge Computer Science fundamentals with Modern Frontend Engineering.
+# SupportFlow - Visual Builder
 
-## 1. Business Scenario & Context
-**Client:** SupportFlow AI  
-**Industry:** Customer Support Automation (Chatbots)  
+A visual decision tree editor for automating customer support conversations. Build, edit, and test chatbot flows with an intuitive node-based canvas interface.
 
-**The Problem:** SupportFlow helps companies build automated "Help Bots" (e.g., "Press 1 for Billing, 2 for Tech Support"). Currently, their configuration is done via a messy Excel spreadsheet. It is error-prone, hard to visualize, and frustrating for non-technical managers.
+## Overview
 
-**Your Role:** You are the new Frontend Engineer. The Product Manager wants a **Visual Decision Tree Editor** where users can see their conversation flow as a flowchart, edit the questions in real-time, and "test drive" the bot instantly.
+SupportFlow enables support teams to design complex conversational flows without coding. The system represents dialogue logic as connected nodes on a canvas, providing real-time editing and interactive preview modes.
 
----
+## Features
 
-## 2. The Assignment Stages
-This is a **hybrid design/engineering challenge**. You are expected to demonstrate competence in both visual design logic and complex DOM manipulation.
+- **Visual Flow Editor** - Drag-and-drop nodes on a spatial canvas
+- **Smart Connectors** - SVG-based bezier curves connecting questions to responses
+- **Real-time Editing** - Edit node text and options with instant visual feedback
+- **Live Preview** - Test bot interactions before deployment
+- **Guided Tour** - First-visit tooltips explain key controls and shortcuts
+- **Minimap Navigation** - Viewport overview for large flows
+- **Undo/Redo** - Full history management with Ctrl+Z / Ctrl+Shift+Z
+- **Pan & Zoom** - Smooth canvas navigation with mouse wheel zoom
+- **Node Management** - Add, delete, and reorganize nodes seamlessly
 
-### Phase 1: The Design System 
-**Before writing code, you must design the visual language of the tool.**
+## Wildcard Feature (Innovation Clause)
 
-* **Deliverable:** A link to your design file (Figma, Penpot, or Sketch) or a PDF export of your design frames.
-* **Requirement:** Your design file must include a dedicated **"Design System" page** that defines:
-    * **Canvas** 
-    * **Node Cards**
-    * **Connectors**
-    * **Color Semantics**
+**Minimap Overview.** Large decision trees become hard to navigate, and non-technical managers need fast spatial orientation. The minimap provides a bird's-eye view of the canvas so users can jump to distant regions and stay aware of overall structure. This reduces cognitive load, shortens onboarding, and cuts workflow errors.
 
-### Phase 2: The Implementation
-**Build the "Flow Builder" using your design system.**
+## Additional Enhancements
 
-* **Constraint 1 (Critical):** You **cannot** use Flowchart/Graph libraries like `react-flow`, `jsPlumb`, or `mermaid.js`. You must build the node rendering and line connection logic yourself to prove you understand DOM coordinates and SVG/Canvas drawing.
-* **Constraint 2:** Do not use component libraries like Material UI or Bootstrap. (Tailwind is allowed only if you use it to build custom components).
+- **Guided Tour** - First-visit tooltips explain key controls and shortcuts
+- **Zoom Controls** - Quick zoom, fit, and mouse wheel navigation
 
----
+## Architecture
 
-## 3. User Stories & Acceptance Criteria
+The application is structured with strict separation of concerns:
 
-### Core Features (Required)
+```
+data/                       Flow JSON data
+src/                        Application source
+|-- core/                   Business logic
+|   |-- state.js            Flow state management and history
+|   |-- canvas.js           Canvas transformation (pan/zoom)
+|   `-- flow.js             Flow traversal and validation
+|-- ui/                     Rendering layers
+|   |-- renderer.js         Node DOM rendering
+|   |-- connectors.js       SVG connector drawing
+|   |-- panel.js            Edit panel interface
+|   |-- tour.js             First-visit guided tour
+|   |-- minimap.js          Canvas minimap visualization
+|   `-- preview.js          Chat preview interface
+|-- controllers/            Event handling and state mutations
+|   |-- canvasController.js Pan, zoom, drag interactions
+|   |-- nodeController.js   Node selection and interaction
+|   `-- previewController.js Preview mode toggle
+|-- styles/                 Modular CSS
+|   |-- variables.css       Design tokens
+|   |-- base.css            Global styles
+|   |-- components.css      Component styles
+|   `-- layout.css          Layout and containers
+`-- main.js                 Application bootstrap
+index.html                   App shell
+README.md                    Project documentation
+```
 
-#### Story 1: The Visual Graph
-> "As a user, I want to see my conversation logic as a connected flowchart, not a list."
+## Design File
 
-* **AC 1:** The app renders "Nodes" (questions) based on the provided JSON data.
-* **AC 2:** The Nodes are positioned absolutely on the canvas (using the x/y coordinates provided in the JSON).
-* **AC 3:** Visual lines (SVG or HTML Canvas) connect a Parent Node to its Child Nodes based on the flow logic.
+Phase 1 deliverable (PDF export): **[Design File](https://drive.google.com/file/d/1iN6ohLyyEENizVc1bRX9JHB05Sq3cIZM/view?usp=sharing)**
 
-#### Story 2: The Editor
-> "As a user, I need to update the text when our support policies change."
+## Design System
 
-* **AC 1:** Clicking a Node opens an "Edit Panel" or turns the card into an editable form.
-* **AC 2:** Users can edit the "Question Text" and the changes reflect immediately on the canvas.
-* **AC 3:** (Constraint) You do not need to save changes to a permanent database. Managing local state (in-memory) is sufficient.
+The interface uses a curated dark theme with cyan, purple, and green semantic colors:
 
-#### Story 3: The "Preview" Mode (The Runner)
-> "As a manager, I want to test the bot experience as if I were a real customer."
+- **Canvas**: Dark neutral space with grid background
+- **Nodes**: Dark surfaces with colored accents by type
+- **Interactions**: Smooth transitions and hover states
+- **Typography**: Syne (UI) and DM Mono (code/labels)
 
-* **AC 1:** A "Play" button toggles the UI from "Editor View" (Flowchart) to "Preview Mode" (Chat Interface).
-* **AC 2:** In Preview Mode, the app displays the Start Node's question.
-* **AC 3:** When the user selects an answer, the app traverses the graph to show the next node.
-* **AC 4:** Show a "Restart" button when a leaf node (end of conversation) is reached.
+## State Management
 
-### The "Wildcard" Feature (Required)
+`FlowState` maintains immutable state with snapshot-based history:
 
-#### Story 4: The Innovation Clause
-> "As a developer, I want to add one feature that makes this tool indispensable."
+- All mutations create snapshots automatically
+- Undo/redo traverses history without recreation
+- Nodes are cloned to prevent external mutations
+- Selection state integrates with edit panel
 
-* **Task:** Identify a missing feature that improves the *Editor* experience.
-* **AC 1:** Implement **one** additional feature of your choice.
-* **AC 2:** In your README, explain *why* you chose this feature and how it adds value to the business.
+## Custom Canvas System
 
----
+Instead of using graph libraries, the canvas is built from first principles:
 
-## 4. Technical Requirements
-* **Data:** Use the `flow_data.json` file provided in this repo.
-* **Tech Stack:** React, Vue, Svelte, or Vanilla JS.
+- **DOM-based nodes** with absolute positioning
+- **Canvas/SVG hybrid** for connectors and minimap
+- **Transform matrix** handles pan and zoom
+- **Coordinate mapping** between screen and world space
+- **Bezier curves** render smooth flow connections
 
----
+## Preview Engine
 
-## 5. Submission Instructions
-1.  **Fork** this repository.
-2.  Complete the code in your fork.
-3.  **Update the README:**
-    * **Delete** all the instructions in this file (the text you are reading now).
-    * **Replace** them with your own documentation.
-    * *Note: Do not append your docs to the end. The final README should look like a professional project documentation, not a homework assignment.*
-4.  Submit your repo link via the [online](https://forms.office.com/e/G6vaRQxWYM) form.
+The chat interface simulates live bot behavior:
 
-### ⚠️ CRITICAL: Pre-Submission Checklist
+- Traverses node graph following user selections
+- Renders messages with animation frames
+- Detects end nodes and loops back to start
+- Maintains conversation history in memory
 
-**STOP and review your work.** To be eligible for the Solution Defense interview, your submission **MUST** pass the following "Gatekeeper" checks.
+## Keyboard Shortcuts
 
-If any of the following are incorrect, your submission will be flagged as incomplete and you will **NOT** be invited for an interview.
+- `Ctrl+Z` - Undo last change
+- `Ctrl+Shift+Z` / `Ctrl+Y` - Redo
+- `Esc` - Close edit panel and deselect
 
-1.  **Public Repository:** Is your GitHub repository set to **Public**? (Private links will be auto-rejected).
-2.  **Audit-Ready History:** Does your Git commit history show your progress over time? (Repositories with a single "Initial Commit" or "Upload files" containing the entire project will be **rejected as unverifiable**).
-3.  **Working Deployment:** Have you tested your live link in an **Incognito/Private** window to ensure it loads without errors?
-4.  **No Restricted Libraries:** Did you build your own components? (Submissions using **Bootstrap, Material UI, or Chakra UI** will be disqualified).
-5.  **Design File Access:** Is your Figma/Penpot link included and set to **"Anyone with the link can view"**?
-6.  **Documentation:** Have you deleted the original assignment text from the `README.md` and replaced it with your own project documentation?
+The first-visit tour calls these out so users do not miss them.
 
-> **By submitting your work, you acknowledge that failure to meet these criteria effectively ends your application process.**
+The guided tour calls these out on first visit so users discover them immediately.
+
+## Data Format
+
+Flows are defined in JSON with node-based structure:
+
+```json
+{
+  "meta": { "theme": "dark", "canvas_size": { "w": 1200, "h": 800 } },
+  "nodes": [
+    {
+      "id": "1",
+      "type": "start|question|end",
+      "text": "Question or response text",
+      "position": { "x": 0, "y": 0 },
+      "options": [{ "label": "Choice", "nextId": "2" }]
+    }
+  ]
+}
+```
+
+## Development
+
+### Setup
+
+No build step required
+
+```bash
+Use VS Code Live Server (Alt+L, Alt+O)
+```
+
+### Module Organization
+
+Each module exports a single class with focused responsibility:
+
+- Input: Constructor parameters define dependencies
+- Output: Public methods for interaction
+- Side effects: Contained, tied to controller layer
+
+### Testing the Flow
+
+1. Open preview mode (click Preview button)
+2. Navigate through questions by selecting options
+3. View bot responses and conversation ending states
+4. Click Restart to begin again
+
+## Implementation Notes
+
+### Performance Considerations
+
+- Connectors are redrawn only when nodes change position
+- Minimap uses canvas rendering layer (faster than DOM)
+- Panel updates use event delegation
+- Zoom transforms applied via CSS transform property
+
+### DOM Coordinate Handling
+
+Node positions are maintained in world space, not screen space:
+
+- Pan/zoom changes only the transform matrix
+- Dragging computes world coordinates from screen coordinates
+- SVG lines calculate endpoints from node DOM elements
+
+### History and Undo
+
+Each state mutation creates a snapshot:
+
+- `saveSnapshot()` is called after every change
+- History index tracks position in timeline
+- Redo is only possible if undo() was just called
+- No branch merging; linear timeline maintained
+
+
+## Future Enhancements
+
+- Multi-user collaboration
+- Flow export to JSON
