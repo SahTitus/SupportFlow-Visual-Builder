@@ -1,20 +1,26 @@
 import { FlowState } from "./core/state.js";
 import { CanvasTransform } from "./core/canvas.js";
+import { FlowEngine } from "./core/flow.js";
 import { NodeRenderer } from "./ui/renderer.js";
 import { ConnectorRenderer } from "./ui/connectors.js";
 import { EditPanel } from "./ui/panel.js";
+import { PreviewUI } from "./ui/preview.js";
 import { CanvasController } from "./controllers/canvasController.js";
 import { NodeController } from "./controllers/nodeController.js";
+import { PreviewController } from "./controllers/previewController.js";
 
 class Application {
   constructor() {
     this.state = null;
     this.transform = null;
+    this.flowEngine = null;
     this.nodeRenderer = null;
     this.connectorRenderer = null;
     this.editPanel = null;
+    this.previewUI = null;
     this.canvasController = null;
     this.nodeController = null;
+    this.previewController = null;
   }
 
   // bootstrap state and UI
@@ -22,11 +28,16 @@ class Application {
     const flowData = await this.loadFlowData();
     this.state = new FlowState(flowData);
     this.transform = new CanvasTransform();
+    this.flowEngine = new FlowEngine(this.state);
+
     this.setupUI();
     this.setupControllers();
     this.render();
     this.fitView();
-    window.addEventListener("resize", () => this.connectorRenderer.render());
+
+    window.addEventListener("resize", () => {
+      this.connectorRenderer.render();
+    });
   }
 
   // Load flow data
@@ -39,8 +50,9 @@ class Application {
     const canvas = document.getElementById("canvas");
     const svgLayer = document.getElementById("svg-layer");
     const editPanelEl = document.getElementById("edit-panel");
+    const previewOverlay = document.getElementById("preview-overlay");
 
-    // renderers DOM creation for nodes and connectors
+    // renderers own DOM creation for nodes and connectors
     this.nodeRenderer = new NodeRenderer(canvas, this.state);
     this.connectorRenderer = new ConnectorRenderer(
       svgLayer,
@@ -48,15 +60,25 @@ class Application {
       this.state,
       this.transform,
     );
-    this.editPanel = new EditPanel(editPanelEl, this.state, () =>
-      this.render(),
+
+    this.editPanel = new EditPanel(
+      editPanelEl,
+      this.state,
+      () => this.render(),
+      () => {
+        // handle delete
+      },
     );
+
+    this.previewUI = new PreviewUI(previewOverlay, this.state, this.flowEngine);
   }
 
   setupControllers() {
     const canvas = document.getElementById("canvas");
     const canvasWrap = document.getElementById("canvas-wrap");
+    const playBtn = document.getElementById("btn-play");
 
+    // controller for pan/zoom and drag behaviors
     this.canvasController = new CanvasController(
       canvasWrap,
       canvas,
@@ -65,7 +87,6 @@ class Application {
       () => this.updateCanvasDisplay(),
     );
 
-    // controller for pan/zoom and drag behaviors
     this.nodeController = new NodeController(
       canvas,
       this.state,
@@ -73,14 +94,52 @@ class Application {
       () => this.onNodeAction(),
     );
 
+    // Toggles overlay and badges
+    this.previewController = new PreviewController(
+      playBtn,
+      this.previewUI,
+      this.state,
+    );
+    this.previewController.setupEventListeners();
+
+    this.setupZoomButtons();
+    this.setupKeyboardShortcuts();
+  }
+
+  setupZoomButtons() {
     document.getElementById("btn-zoom-in").addEventListener("click", () => {
       this.canvasController.zoomIn();
     });
+
     document.getElementById("btn-zoom-out").addEventListener("click", () => {
       this.canvasController.zoomOut();
     });
+
     document.getElementById("btn-fit").addEventListener("click", () => {
       this.canvasController.fitView();
+    });
+  }
+
+  setupKeyboardShortcuts() {
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "z" && !e.shiftKey) {
+          e.preventDefault();
+          if (this.state.undo()) {
+            this.render();
+          }
+        } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
+          e.preventDefault();
+          if (this.state.redo()) {
+            this.render();
+          }
+        }
+      }
+
+      if (e.key === "Escape") {
+        this.state.deselectNode();
+        this.editPanel.close();
+      }
     });
   }
 
@@ -99,10 +158,18 @@ class Application {
 
   render() {
     this.nodeRenderer.render();
+    this.attachNodeEventListeners();
+    this.connectorRenderer.render();
+
+    if (this.state.selectedNodeId) {
+      this.editPanel.open(this.state.selectedNodeId);
+    }
+  }
+
+  attachNodeEventListeners() {
     this.state.nodes.forEach((node) => {
       this.nodeController.attachNodeListeners(node.id);
     });
-    this.connectorRenderer.render();
   }
 
   fitView() {
