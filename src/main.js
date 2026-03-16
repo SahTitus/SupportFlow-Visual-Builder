@@ -8,6 +8,7 @@ import { PreviewUI } from "./ui/preview.js";
 import { CanvasController } from "./controllers/canvasController.js";
 import { NodeController } from "./controllers/nodeController.js";
 import { PreviewController } from "./controllers/previewController.js";
+import { Minimap } from "./ui/minimap.js";
 
 class Application {
   constructor() {
@@ -21,6 +22,7 @@ class Application {
     this.canvasController = null;
     this.nodeController = null;
     this.previewController = null;
+    this.minimap = null;
   }
 
   // bootstrap state and UI
@@ -35,8 +37,10 @@ class Application {
     this.render();
     this.fitView();
 
+    // This event listener keep connectors and minimap aligned with layout changes
     window.addEventListener("resize", () => {
       this.connectorRenderer.render();
+      this.minimap.render();
     });
   }
 
@@ -51,6 +55,8 @@ class Application {
     const svgLayer = document.getElementById("svg-layer");
     const editPanelEl = document.getElementById("edit-panel");
     const previewOverlay = document.getElementById("preview-overlay");
+    const minimapCanvas = document.getElementById("minimap-canvas");
+    const canvasWrap = document.getElementById("canvas-wrap");
 
     // renderers own DOM creation for nodes and connectors
     this.nodeRenderer = new NodeRenderer(canvas, this.state);
@@ -68,6 +74,15 @@ class Application {
       () => {
         // handle delete
       },
+    );
+
+    // Read DOM geometry to follow the setup
+    this.minimap = new Minimap(
+      minimapCanvas,
+      svgLayer,
+      canvasWrap,
+      this.state,
+      this.transform,
     );
 
     this.previewUI = new PreviewUI(previewOverlay, this.state, this.flowEngine);
@@ -154,12 +169,14 @@ class Application {
     document.getElementById("zoom-label").textContent =
       this.canvasController.getZoomPercent() + "%";
     this.connectorRenderer.render();
+    this.minimap.render();
   }
 
   render() {
     this.nodeRenderer.render();
     this.attachNodeEventListeners();
     this.connectorRenderer.render();
+    this.minimap.render();
 
     if (this.state.selectedNodeId) {
       this.editPanel.open(this.state.selectedNodeId);
